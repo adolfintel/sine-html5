@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>SINE.js Example</title>
+</head>
+<body>
+<!-- embedded player code 
+	we create an iframe with id="sine" (it could be anything), set player.html?preset=test.sin as source (where test.sin is the preset, of course), and then add some styling to make it borderless.
+-->
+<iframe id="sine" src="player.html?preset=test.sin" frameborder="0" scrolling="no" style="display:block; width:100%; border:none; margin:0; padding:0; overflow:hidden;"></iframe>
+<!--
+	the following script automatically resizes the embedded player in response to changes in height from within the player itself.
+	it is optional, and you can specify a fixed height in the iframe style.
+	This code is necessary, because seamless iframes are no longer trendy and all major browsers don't support them
+-->
+<script type="text/javascript">
+	setInterval(function(){
+		try{
+			var x=document.getElementById("sine"); //place your iframe id here
+			x.style.height=x.contentDocument.getElementsByTagName("body")[0].clientHeight+"px";
+		}catch(e){}
+	},50);
+</script>
+<!--
+	the following script accesses the player iframe to get preset details
+	it needs to be done periodically because at first it will just say "Loading...", since the preset is loaded via AJAX
+	I'm sure there's a better way to do it, but I'm no web dev
+-->
+<div id="title"></div>
+<div id="author"></div>
+<div id="description"></div>
+<script type="text/javascript">
+	setInterval(function(){
+		try{
+			var x=document.getElementById("sine"); //place your iframe id here
+			document.getElementById("title").innerHTML=x.contentDocument.getElementById("presetTitle").innerHTML;
+			document.getElementById("author").innerHTML=x.contentDocument.getElementById("presetAuthor").innerHTML;
+			document.getElementById("description").innerHTML=x.contentDocument.getElementById("presetDescription").innerHTML;
+		}catch(e){
+			//preset not loaded yet
+		}
+	},50);
+</script>
+</body>
+</html>

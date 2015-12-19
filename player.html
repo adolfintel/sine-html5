@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>SINE Web Player</title>
+<script type="text/javascript" src="sine.js"> </script>
+<script type="text/javascript">
+	var playImg="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwBAMAAAClLOS0AAAAJFBMVEUAAAAAAABTU1Ozs7MBAQFBQUEkJCQyMjIUFBQAAABISEgAAABWFPiVAAAAC3RSTlMA+CEH0FWPd6zoQXgMfOoAAAB5SURBVDjL3dM9DYAwEIZhRHRjOQnVUAV4qIEmGCDBAQpqgaQHJZ85DPAOrL31Ge5/Gi1WgmAAsxMoEzQDkBMoEzQDkBMoEzQDkBMoEzQDkBOoEGwA3QAK5Dig3B4BFug8wRCv+A1nhX0kWO0Nx/BUgP3niQbDNxgzXvMJcUE4MDsiAAAAAElFTkSuQmCC",
+	pauseImg="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwAgMAAAAqbBEUAAAADFBMVEUAAAAAAAAAAAAAAAA16TeWAAAAA3RSTlMAQBQQ1V+mAAAAIklEQVQoz2MYKCAaxsAwNQTK2f+XgaH+3yiH5hxEwA8QAABAaVzlMjCoHgAAAABJRU5ErkJggg==";
+
+	var BAR_BK="#EEEEEE", ACCENT="#1F74C9";
+
+	var lockControls=true;
+	var preset,isochronicRenderer;
+	var s,v;
+	
+	function secondsToHMS(t){
+		var h = parseInt(t / 3600);
+        t %= 3600;
+        var m = parseInt(t / 60);
+        t %= 60;
+        var s = parseInt(t);
+        return "" + (h < 10 ? ("0" + h) : h) + ":" + (m < 10 ? ("0" + m) : m) + ":" + (s < 10 ? ("0" + s) : s);
+	}
+	
+	function loadPreset(url){
+		try{
+			var xhr=new XMLHttpRequest();
+			xhr.overrideMimeType("application/xml");
+			xhr.onreadystatechange=function(){
+				try{
+					if(xhr.responseXML){
+						preset=new Preset(xhr.responseXML.getElementsByTagName("Preset")[0]);
+						if(!preset) throw "No preset loaded";
+						document.getElementById("presetTitle").innerHTML=preset.getInfo().getTitle();
+						document.getElementById("presetAuthor").innerHTML=preset.getInfo().getAuthor();
+						document.getElementById("presetDescription").innerHTML=preset.getInfo().getDescription();
+						isochronicRenderer=new IsochronicRenderer(preset);
+						isochronicRenderer.play();
+						lockControls=false;
+						setInterval(function(){
+							document.getElementById("time").innerHTML=secondsToHMS(isochronicRenderer.getT())+"/"+secondsToHMS(preset.getLength());
+							drawBar(s,isochronicRenderer.getT()/preset.getLength());
+							drawBar(v,isochronicRenderer.getVolume());
+							document.getElementById("playPause").src=isochronicRenderer.isPlaying()?pauseImg:playImg;
+						},30);
+					}
+				}catch(e){
+					document.getElementById("time").innerHTML="Error "+e;
+				}
+			}
+			xhr.open("GET",url,true);
+			xhr.send(null);
+		}catch(e){
+			document.getElementById("time").innerHTML="Error "+e;
+		}
+	}
+	
+	function seek(amount){
+		isochronicRenderer.setT(amount*preset.getLength());
+	}
+	
+	function setVolume(amount){
+		isochronicRenderer.setVolume(amount);
+	}
+	
+	function playPause(){
+		if(isochronicRenderer.isPlaying()) isochronicRenderer.pause(); else isochronicRenderer.play();
+	}
+	
+	function drawBar(canvas,amount){
+		var c=canvas.getContext("2d");
+		c.fillStyle=canvas.backgroundColor;
+		c.fillRect(0,0,canvas.width, canvas.height);
+		c.stroke();
+		c.fillStyle=canvas.foregroundColor;
+		c.fillRect(0,0,canvas.width*amount,canvas.height);
+		c.stroke();
+	}
+	
+	function getParameterByName(name) {
+		name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+		var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+			results = regex.exec(location.search);
+		return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+	}
+	
+</script>
+<style type="text/css">
+html,body{
+	border:none;
+	margin:0;
+	padding:0;
+}
+body{
+	font-family:'open sans',sans-serif;
+	font-weight:300;
+}
+canvas.bar{
+	width:100%;
+	height:100%;
+	display:block;
+}
+div.bar{
+	border:1px solid #4071FF;
+	padding:0;
+	height:2em;
+	width:100%;
+	display:inline-block;
+	vertical-align:middle;
+}
+#playPause{
+	width:2em; 
+	height:2em;
+	margin-left:0.2em;
+}
+table{
+	border:none;
+	width:100%;
+}
+@media all and (max-width: 30em){
+	body{
+		font-size:0.75em;
+	}
+}
+p.error{
+	color:#C14040;
+	font-weight:700;
+	font-size:0.9em;
+}
+</style>
+</head>
+<body>
+<div id="presetTitle" style="display:none;">Loading...</div>
+<div id="presetAuthor" style="display:none;">Loading...</div>
+<div id="presetDescription" style="display:none;">Loading...</div>
+<table> <!-- 90s style layout! -->
+	<tr> 
+		<td>
+			<div class="bar">
+				<canvas id="seekBar" class="bar" width="1200" height="1"> </canvas> 
+				<script type="text/javascript">
+					s=document.getElementById("seekBar");
+					s.backgroundColor=BAR_BK;
+					s.foregroundColor=ACCENT;
+					drawBar(s,0);
+					s.dragging=false;
+					s.addEventListener('mousedown',function(evt){
+						s.dragging=true;
+					});
+					s.addEventListener('mouseup',function(evt){
+						if(!s.dragging||lockControls) return;
+						var r = s.getBoundingClientRect();
+						var amount=(evt.clientX-r.left)/r.width;
+						seek(amount);
+						s.dragging=false;
+					});
+					s.addEventListener('mouseout',function(evt){
+						if(!s.dragging||lockControls) return;
+						var r = s.getBoundingClientRect();
+						var amount=(evt.clientX-r.left)/r.width;
+						seek(amount);
+						s.dragging=false;
+					})
+					s.addEventListener('mousemove',function(evt){
+						if(!s.dragging||lockControls) return;
+						var r = s.getBoundingClientRect();
+						var amount=(evt.clientX-r.left)/r.width;
+						seek(amount);
+					});
+				</script>
+			</div>
+		</td>
+		<td>
+			<img src="null.png" id="playPause" alt="Play/Pause"/>
+			<script type="text/javascript">
+				document.getElementById("playPause").addEventListener('mouseup', function(evt){if(!lockControls)playPause();});
+			</script>
+		</td>
+	</tr>
+</table>
+<table>
+	<tr>
+	<td id="time">Loading...</td>
+	<td style="text-align:right">
+		Volume
+		<div class="bar" style="width:10em; margin-left:0.5em;">
+				<canvas id="volumeBar" class="bar" width="600" height="1"> </canvas> 
+				<script type="text/javascript">
+					v=document.getElementById("volumeBar");
+					v.backgroundColor=BAR_BK;
+					v.foregroundColor=ACCENT;
+					drawBar(v,0.5);
+					v.dragging=false;
+					v.addEventListener('mousedown',function(evt){
+						v.dragging=true;
+					});
+					v.addEventListener('mouseup',function(evt){
+						if(!v.dragging||lockControls) return;
+						var r = v.getBoundingClientRect();
+						var amount=(evt.clientX-r.left)/r.width;
+						setVolume(amount);
+						v.dragging=false;
+					});
+					v.addEventListener('mouseout',function(evt){
+						if(!v.dragging||lockControls) return;
+						var r = v.getBoundingClientRect();
+						var amount=(evt.clientX-r.left)/r.width;
+						setVolume(amount);
+						v.dragging=false;
+					})
+					v.addEventListener('mousemove',function(evt){
+						if(!v.dragging||lockControls) return;
+						var r = v.getBoundingClientRect();
+						var amount=(evt.clientX-r.left)/r.width;
+						setVolume(amount);
+					});
+				</script>
+		</div>
+	</td>
+	</tr>
+</table>
+<script type="text/javascript">
+	if(!isBrowserSupported()||!window.HTMLCanvasElement){
+		document.body.innerHTML="<p class='error'>This feature requires a modern browser, such as Mozilla Firefox or Google Chrome</p>"; //todo: error message
+	}else{
+		var req=getParameterByName("preset");
+		if(req) loadPreset(getParameterByName("preset")); else document.getElementById("time").innerHTML="No Preset specified in URL";
+	}
+</script>
+
+</body>
+
+</html>
