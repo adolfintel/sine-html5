@@ -195,6 +195,28 @@ Preset.prototype={
 	}
 }
 
+//SmoothPulseGenerator
+var SQRT_2PI=Math.sqrt(2*Math.PI);
+function gauss(x,mu,sigma){
+	return ((1.0 / (sigma * SQRT_2PI)) * Math.exp(-(Math.pow(x - mu, 2) / (2 * Math.pow(sigma, 2)))));
+}
+var PULSE_SMOOTH=0.7, PULSE_WIDTH=0.15, PULSE_FLOOR=-0.8,PULSE_CEIL=1.0, PULSE_NSAMPLES=8192;
+var PULSE=[];
+var max=-1;
+for (var i = 0; i < PULSE_NSAMPLES; i++) {
+	var x = i /  PULSE_NSAMPLES;
+	PULSE[i] = gauss(Math.pow(x, PULSE_SMOOTH), 0.5, PULSE_WIDTH);
+	if (PULSE[i] > max) {
+		max = PULSE[i];
+	}
+}
+for (var i = 0; i < PULSE_NSAMPLES; i++) {
+	PULSE[i] = PULSE_FLOOR + (PULSE_CEIL - PULSE_FLOOR) * (PULSE[i] / max);
+}
+function SmoothPulseOscillator(){
+	
+}
+
 function EntrainmentTrackRenderer(et,destination){
 	this.et=et;
 	this.track=context.createGain();
@@ -209,16 +231,25 @@ function EntrainmentTrackRenderer(et,destination){
 	this.baseFOsc.frequency.value=0; //controlled by setT(t) method
 	this.baseFOsc.connect(this.baseMULent);
 	this.baseFOsc.start(0);
-	this.entFOsc=context.createOscillator();
-	this.entFOsc.frequency.value=0; //controlled by setT(t) method
+	this.entFOsc=context.createScriptProcessor(16384,1,1);
+	this.entFOsc.t=0;
+	this.entFOsc.frequency=0; //controlled by setT(t) method
+	this.entFOsc.onaudioprocess=function(e){
+		var output = e.outputBuffer.getChannelData(0);
+		var tStep=1.0/context.sampleRate;
+		for(var i=0;i<16384;i++){
+			output[i]=PULSE[~~((this.t%1)*PULSE_NSAMPLES)];
+			this.t+=tStep*this.frequency;
+		}
+	}.bind(this.entFOsc);
 	this.entFOsc.connect(this.baseMULent.gain);
-	this.entFOsc.start(0);
+	
 }
 
 EntrainmentTrackRenderer.prototype={
 	constructor:EntrainmentTrackRenderer,
 	setT:function(t){
-		this.entFOsc.frequency.value=this.et.getEntrainmentFrequency(t);
+		this.entFOsc.frequency=this.et.getEntrainmentFrequency(t);
 		this.volumeEnv.gain.value=this.et.getVolume(t);
 		this.baseFOsc.frequency.value=this.et.getBaseFrequency(t);
 	}
