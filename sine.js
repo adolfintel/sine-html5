@@ -213,9 +213,6 @@ for (var i = 0; i < PULSE_NSAMPLES; i++) {
 for (var i = 0; i < PULSE_NSAMPLES; i++) {
 	PULSE[i] = PULSE_FLOOR + (PULSE_CEIL - PULSE_FLOOR) * (PULSE[i] / max);
 }
-function SmoothPulseOscillator(){
-	
-}
 
 function EntrainmentTrackRenderer(et,destination){
 	this.et=et;

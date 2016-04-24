@@ -9,9 +9,9 @@ Isochronic tones are a commonly used aural stimuli for Brainwave Entrainment, co
 
 This is a partial port of LibBWEntrainment and SINE. It can play .sin presets using the Web Audio API.
 
-This port can ONLY PLAY presets, and it works in a completely different way than the original Java version. Sound synthesis is provided almost entirely by the browser, so sound quality varies with the browser you're using, and also noise and pulses implementation are different.
+This port can ONLY PLAY presets, and it works in a completely different way than the original Java version. Sound synthesis is provided almost entirely by the browser, so sound quality varies with the browser you're using, and it sounds slightly different from the PC/Android version.
 That said, I tried to make it sounds as similar to the original as possible.
-All other capabilities of LibBWEntrainment went down the shitter during this port. There is absolutely no modularity: all it does is load a .sin file via AJAX, and shit out Isochronic tones. As a result of these limitations, it is very small and relatively lightweight. No frameworks were used.
+All other capabilities of LibBWEntrainment were sacrificced in this port. There is absolutely no modularity: all it does is load a .sin file via AJAX, and render it as Isochronic tones. As a result of these limitations, it is very small and relatively lightweight. No libraries or frameworks were used.
  
 ## Website
 [SINE Isochronic Entrainer](http://sine.adolfintel.com/)
@@ -22,7 +22,7 @@ All other capabilities of LibBWEntrainment went down the shitter during this por
 * example.html and test.sin: an example of how to use the player, and how to access its contents. This is only for demonstration, you can delete them.
 
 ## Compatibility
-Firefox 25+, Google Chrome 35+, Opera 22+, Microsoft Edge 12+. Safari is currently unsupported, but it may work in the future.
+Firefox 25+, Google Chrome 35+, Opera 22+, Microsoft Edge 12+, Safari 9+.
 
 Note: Some browsers will not let the player access the .sin file from the hard drive, so you must load your entire site to a server and and access it from there. Also, for security reasons, .sin files can only be loaded from the same domain.
 
@@ -30,7 +30,7 @@ Note: Some browsers will not let the player access the .sin file from the hard d
 ![Screenshot](http://adolfintel.com/sine/webapp1.png)
 
 ## License
-Copyright (C) 2015 Federico Dossena
+Copyright (C) 2015-2016 Federico Dossena
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as published by
