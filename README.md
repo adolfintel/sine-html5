@@ -14,7 +14,7 @@ That said, I tried to make it sounds as similar to the original as possible.
 All other capabilities of LibBWEntrainment were sacrificced in this port. There is absolutely no modularity: all it does is load a .sin file via AJAX, and render it as Isochronic tones. As a result of these limitations, it is very small and relatively lightweight. No libraries or frameworks were used.
  
 ## Website
-[SINE Isochronic Entrainer](http://sine.adolfintel.com/)
+[SINE Isochronic Entrainer](http://isochronic.io/)
 
 ## Files
 * sine.js: contains the main implementation of LibBWEntrainment classes, and a isBrowserSupported() method that you can use to  check browser capabilities
@@ -27,7 +27,7 @@ Firefox 25+, Google Chrome 35+, Opera 22+, Microsoft Edge 12+, Safari 9+.
 Note: Some browsers will not let the player access the .sin file from the hard drive, so you must load your entire site to a server and and access it from there. Also, for security reasons, .sin files can only be loaded from the same domain.
 
 ## Screenshots
-![Screenshot](http://adolfintel.com/sine/webapp1.png)
+![Screenshot](http://fdossena.com/sine/webapp1.png)
 
 ## License
 Copyright (C) 2015-2016 Federico Dossena
