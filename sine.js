@@ -326,6 +326,7 @@ IsochronicRenderer.prototype={
 	constructor:IsochronicRenderer,
 	play:function(){
 		this.playing=true;
+		context.resume();
 	},
 	pause:function(){
 		this.playing=false;

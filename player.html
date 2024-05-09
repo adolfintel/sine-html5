@@ -35,7 +35,6 @@
 						document.getElementById("presetAuthor").innerHTML=preset.getInfo().getAuthor();
 						document.getElementById("presetDescription").innerHTML=preset.getInfo().getDescription();
 						isochronicRenderer=new IsochronicRenderer(preset);
-						isochronicRenderer.play();
 						lockControls=false;
 						setInterval(function(){
 							document.getElementById("time").innerHTML=secondsToHMS(isochronicRenderer.getT())+"/"+secondsToHMS(preset.getLength());
